@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handful HF-1</title>
+<style>
+@font-face { font-family: "DotGothic16"; src: url("fonts/DotGothic16-Regular.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "Barlow Semi Condensed"; src: url("fonts/BarlowSemiCondensed-Medium.ttf") format("truetype"); font-weight: 500; }
+@font-face { font-family: "Barlow Semi Condensed"; src: url("fonts/BarlowSemiCondensed-SemiBold.ttf") format("truetype"); font-weight: 600; }
+@font-face { font-family: "Barlow Semi Condensed"; src: url("fonts/BarlowSemiCondensed-Bold.ttf") format("truetype"); font-weight: 700; }
+
+/* Layout: one hardware object on a desk. Chord buttons left, amber dot-matrix screen
+   centre, machined voicing dial right; encoder row below; chunky 13-key strip at the
+   bottom. Everything inside the device is sized in container units so it scales as one. */
+:root {
+  --desk: #161814;
+  --desk-glow: #2a2e26;
+  --shell: #bcc5b9;
+  --shell-hi: #d3dbd0;
+  --shell-lo: #98a295;
+  --ink: #283026;
+  --ink-soft: #56604f;
+  --bezel: #1d211b;
+  --screen: #0c0e09;
+  --amber: #ffb547;
+  --amber-dim: #6b4a1c;
+  --amber-ghost: #2a1f0e;
+  --teal: #355750;
+  --teal-hi: #4a7268;
+  --ivory: #f1ede2;
+  --ivory-lo: #d4cfc1;
+  --graphite: #2b2e29;
+  --caption: #a9b1a3;
+
+  --f-screen: "DotGothic16", "MS Gothic", ui-monospace, monospace;
+  --f-silk: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body {
+  background: var(--desk);
+  color: var(--caption);
+  font-family: var(--f-silk);
+}
+.device {
+  container-type: inline-size;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+}
+.shell {
+  position: relative;
+  width: 100cqw;
+  aspect-ratio: 100 / 60;
+  border-radius: 3.2cqw;
+  background:
+    linear-gradient(180deg, var(--shell-hi), var(--shell) 18%, var(--shell) 82%, var(--shell-lo));
+  box-shadow:
+    inset 0 0.25cqw 0 rgba(255,255,255,.55),
+    inset 0 -0.5cqw 0 rgba(0,0,0,.12),
+    0 2.4cqw 4cqw rgba(0,0,0,.55),
+    0 0.4cqw 0.6cqw rgba(0,0,0,.35);
+  padding: 2.4cqw 3cqw 3cqw;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 3.2cqw 23cqw 10.5cqw 1fr;
+  row-gap: 1.6cqw;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.shell::before { /* faint moulding texture */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px);
+}
+
+/* ---------- brand bar ---------- */
+.brandbar { display: flex; align-items: center; gap: 2cqw; color: var(--ink); font-family: var(--f-silk); }
+.brand { font-weight: 700; font-size: 2.1cqw; letter-spacing: .55cqw; }
+.model { font-weight: 500; font-size: 1.05cqw; letter-spacing: .25cqw; color: var(--ink-soft); }
+.grille {
+  flex: 1; height: 1.6cqw; border-radius: .8cqw;
+  background-image: radial-gradient(circle, rgba(30,36,28,.55) 0 .28cqw, transparent .32cqw);
+  background-size: .95cqw .95cqw;
+  opacity: .7;
+}
+.power { display: flex; align-items: center; gap: .6cqw; font-size: 1cqw; letter-spacing: .2cqw; font-weight: 600; color: var(--ink-soft); }
+
+/* ---------- LEDs ---------- */
+.led {
+  width: .75cqw; height: .75cqw; border-radius: 50%; flex: none;
+  background: #4d4436; box-shadow: inset 0 .1cqw .15cqw rgba(0,0,0,.6);
+}
+.led.on, .on > .led, [aria-pressed="true"] > .led {
+  background: var(--amber);
+  box-shadow: 0 0 .5cqw var(--amber), 0 0 1.2cqw rgba(255,181,71,.6);
+}
+
+/* ---------- top row ---------- */
+.top { display: grid; grid-template-columns: 33cqw 1fr 23.5cqw; column-gap: 2.6cqw; align-items: stretch; }
+
+.silk { font-family: var(--f-silk); font-weight: 600; font-size: 1cqw; letter-spacing: .22cqw; color: var(--ink-soft); text-transform: uppercase; }
+
+.chords { display: grid; grid-template-rows: auto auto auto; row-gap: 1.1cqw; align-content: center; }
+.chord-row { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 1cqw; }
+.cbtn {
+  position: relative; border: 0; cursor: pointer;
+  border-radius: 1.3cqw; aspect-ratio: 1 / .92;
+  font-family: var(--f-silk); font-weight: 700; font-size: 1.9cqw; letter-spacing: .1cqw;
+  display: grid; place-items: center;
+  transition: transform .06s, box-shadow .06s, filter .2s;
+}
+.cbtn.type { background: linear-gradient(180deg, var(--teal-hi), var(--teal)); color: var(--ivory);
+  box-shadow: 0 .45cqw 0 #22382f, 0 .7cqw 1cqw rgba(0,0,0,.35), inset 0 .15cqw 0 rgba(255,255,255,.18); }
+.cbtn.ext { background: linear-gradient(180deg, #fbf8ef, var(--ivory)); color: var(--ink);
+  box-shadow: 0 .45cqw 0 var(--ivory-lo), 0 .7cqw 1cqw rgba(0,0,0,.3), inset 0 .15cqw 0 #fff; }
+.cbtn .hint { position: absolute; right: .7cqw; bottom: .5cqw; font-size: .85cqw; font-weight: 600; opacity: .55; letter-spacing: 0; }
+.cbtn .led { position: absolute; left: .8cqw; top: .8cqw; }
+.cbtn[aria-pressed="true"] { transform: translateY(.35cqw); }
+.cbtn.type[aria-pressed="true"] { box-shadow: 0 .1cqw 0 #22382f, 0 0 1.6cqw rgba(255,181,71,.35), inset 0 .15cqw 0 rgba(255,255,255,.18); }
+.cbtn.ext[aria-pressed="true"] { box-shadow: 0 .1cqw 0 var(--ivory-lo), 0 0 1.6cqw rgba(255,181,71,.35), inset 0 .15cqw 0 #fff; }
+.cbtn:focus-visible, .tbtn:focus-visible, .knob:focus-visible, .dial:focus-visible, .key:focus-visible {
+  outline: .25cqw solid var(--amber); outline-offset: .3cqw;
+}
+
+/* ---------- screen ---------- */
+.bezel {
+  background: linear-gradient(180deg, #2a2f27, var(--bezel));
+  border-radius: 1.6cqw; padding: 1.1cqw;
+  box-shadow: inset 0 .2cqw .3cqw rgba(0,0,0,.7), 0 .15cqw 0 rgba(255,255,255,.45);
+}
+.screen {
+  position: relative; height: 100%; box-sizing: border-box; overflow: hidden;
+  background: radial-gradient(130% 120% at 50% 0%, #15180f, var(--screen) 70%);
+  border-radius: .7cqw;
+  padding: 1.2cqw 1.6cqw;
+  font-family: var(--f-screen); color: var(--amber);
+  text-shadow: 0 0 .5cqw rgba(255,181,71,.55);
+  display: grid; grid-template-rows: auto 1fr auto auto; row-gap: .5cqw;
+}
+.screen::after { /* scanlines + glass */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px),
+    linear-gradient(160deg, rgba(255,255,255,.06), transparent 40%);
+}
+.s-top, .s-bot { display: flex; justify-content: space-between; gap: 1cqw; font-size: 1.15cqw; letter-spacing: .08cqw; color: var(--amber); white-space: nowrap; }
+.s-top .dim, .s-bot .dim { color: var(--amber-dim); text-shadow: none; }
+.s-chord { display: grid; align-content: center; gap: .6cqw; min-width: 0; }
+.chord-name { font-size: var(--name-size, 5.6cqw); line-height: 1; letter-spacing: .1cqw; white-space: nowrap; }
+.chord-name.wtf { animation: flicker .18s steps(2) 3; }
+@keyframes flicker { 50% { opacity: .35; } }
+.chord-notes { font-size: 1.25cqw; color: var(--amber); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip { display: grid; grid-template-columns: repeat(48, 1fr); gap: .18cqw; height: 1.5cqw; }
+.strip i { background: var(--amber-ghost); border-radius: .12cqw; }
+.strip i.blk { height: 70%; align-self: end; }
+.strip i.lit { background: var(--amber); box-shadow: 0 0 .5cqw var(--amber); }
+.strip i.bass { background: #ffe1a8; box-shadow: 0 0 .6cqw #ffe1a8; }
+.overlay {
+  position: absolute; inset: 1.2cqw 1.6cqw; display: grid; align-content: center; gap: 1cqw;
+  background: var(--screen); opacity: 0; transition: opacity .15s; pointer-events: none;
+}
+.overlay.show { opacity: 1; }
+.ov-name { font-size: 1.6cqw; letter-spacing: .3cqw; color: var(--amber); }
+.ov-value { font-size: 4.2cqw; line-height: 1; }
+.ov-bar { display: grid; grid-template-columns: repeat(24, 1fr); gap: .25cqw; height: 1.1cqw; }
+.ov-bar i { background: var(--amber-ghost); }
+.ov-bar i.lit { background: var(--amber); box-shadow: 0 0 .4cqw var(--amber); }
+
+/* ---------- dials ---------- */
+.dials { display: grid; grid-template-columns: 1fr auto; grid-template-rows: 1fr auto; column-gap: 1.4cqw; align-items: center; }
+.dial-wrap { display: grid; justify-items: center; gap: .9cqw; }
+.dial {
+  --angle: 0deg;
+  position: relative; border-radius: 50%; cursor: ns-resize; outline: none;
+}
+.dial.big { width: 13.6cqw; aspect-ratio: 1; }
+.dial.small { width: 6.4cqw; aspect-ratio: 1; }
+.dial .ticks { position: absolute; inset: -1.3cqw; border-radius: 50%;
+  background: repeating-conic-gradient(from -135deg, var(--ink) 0 .9deg, transparent .9deg 16.875deg);
+  -webkit-mask: radial-gradient(circle, transparent 66%, #000 67%, #000 70%, transparent 71%);
+          mask: radial-gradient(circle, transparent 66%, #000 67%, #000 70%, transparent 71%);
+  opacity: .55;
+}
+.dial.small .ticks { inset: -1cqw; background: repeating-conic-gradient(from -135deg, var(--ink) 0 1.6deg, transparent 1.6deg 33.75deg); }
+.dial .ticks::after { content: ""; }
+.dial .cap {
+  position: absolute; inset: 0; border-radius: 50%;
+  transform: rotate(var(--angle));
+  transition: transform .09s ease-out;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.0) 0 58%, rgba(0,0,0,.12) 59% 61%, transparent 62%),
+    conic-gradient(from 0deg, #d9dcd6, #8d918a, #e8ebe5, #9a9e97, #dfe2dc, #878b84, #e4e7e1, #959993, #d9dcd6);
+  box-shadow: 0 .7cqw 1.2cqw rgba(0,0,0,.45), inset 0 0 0 .25cqw rgba(0,0,0,.18), inset 0 .2cqw .2cqw rgba(255,255,255,.6);
+}
+.dial .cap::before { /* knurled rim */
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(0,0,0,.22) 0 2deg, transparent 2deg 5deg);
+  -webkit-mask: radial-gradient(circle, transparent 86%, #000 87%);
+          mask: radial-gradient(circle, transparent 86%, #000 87%);
+}
+.dial .cap::after { /* pointer dimple */
+  content: ""; position: absolute; left: 50%; top: 9%; width: 9%; aspect-ratio: 1; translate: -50% 0;
+  border-radius: 50%; background: var(--amber);
+  box-shadow: 0 0 .6cqw var(--amber), inset 0 .1cqw .15cqw rgba(0,0,0,.4);
+}
+.dial.small .cap::after { width: 13%; top: 10%; background: var(--graphite); box-shadow: inset 0 .1cqw .15cqw rgba(0,0,0,.4); }
+.dial-label { display: flex; align-items: center; gap: .8cqw; }
+.mode-switch { display: flex; border-radius: .5cqw; overflow: hidden; box-shadow: inset 0 0 0 .12cqw var(--ink-soft); }
+.mode-switch button {
+  border: 0; background: transparent; padding: .25cqw .7cqw; cursor: pointer;
+  font-family: var(--f-silk); font-weight: 700; font-size: .85cqw; letter-spacing: .15cqw; color: var(--ink-soft);
+}
+.mode-switch button[aria-pressed="true"] { background: var(--ink); color: var(--amber); }
+
+/* ---------- middle row ---------- */
+.mid { display: grid; grid-template-columns: 33cqw 1fr; column-gap: 2.6cqw; align-items: center; }
+.toggles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9cqw 1cqw; }
+.tbtn {
+  display: flex; align-items: center; justify-content: center; gap: .6cqw;
+  height: 3.6cqw; border: 0; border-radius: .8cqw; cursor: pointer;
+  background: linear-gradient(180deg, #3a3e37, var(--graphite)); color: var(--ivory);
+  font-family: var(--f-silk); font-weight: 700; font-size: 1cqw; letter-spacing: .18cqw;
+  box-shadow: 0 .3cqw 0 #151713, 0 .5cqw .8cqw rgba(0,0,0,.3), inset 0 .1cqw 0 rgba(255,255,255,.12);
+}
+.tbtn:active { transform: translateY(.2cqw); box-shadow: 0 .1cqw 0 #151713; }
+.tbtn .val { color: var(--amber); font-family: var(--f-screen); font-weight: 400; letter-spacing: 0; font-size: 1.05cqw; }
+.encoders { display: grid; grid-template-columns: repeat(8, 1fr); column-gap: 1cqw; }
+.enc { display: grid; justify-items: center; gap: .7cqw; }
+.knob {
+  --v: 0; position: relative; width: 5.4cqw; aspect-ratio: 1; border-radius: 50%; cursor: ns-resize; outline: none;
+}
+.knob .ring { position: absolute; inset: -.75cqw; border-radius: 50%;
+  background: conic-gradient(from -135deg, var(--amber) 0 calc(var(--v) * 270deg), rgba(40,48,38,.28) calc(var(--v) * 270deg) 270deg, transparent 270deg);
+  -webkit-mask: radial-gradient(circle, transparent 72%, #000 73%);
+          mask: radial-gradient(circle, transparent 72%, #000 73%);
+}
+.knob.stepped .ring { background: repeating-conic-gradient(from -135deg, rgba(40,48,38,.55) 0 2deg, transparent 2deg calc(270deg / var(--steps)));
+  -webkit-mask: radial-gradient(circle, transparent 74%, #000 75%, #000 86%, transparent 87%);
+          mask: radial-gradient(circle, transparent 74%, #000 75%, #000 86%, transparent 87%); }
+.knob .body {
+  position: absolute; inset: 0; border-radius: 50%;
+  transform: rotate(calc(-135deg + var(--v) * 270deg));
+  background: radial-gradient(circle at 40% 30%, #4a4e47, var(--graphite) 55%, #1b1d19);
+  box-shadow: 0 .45cqw .8cqw rgba(0,0,0,.45), inset 0 .12cqw .12cqw rgba(255,255,255,.18);
+}
+.knob .body::after { content: ""; position: absolute; left: 50%; top: 8%; width: .38cqw; height: 32%; translate: -50% 0; border-radius: .2cqw; background: var(--ivory); }
+.enc .silk { font-size: .92cqw; }
+
+/* ---------- keys ---------- */
+.keys { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); column-gap: .7cqw; padding-top: .2cqw; }
+.key {
+  position: relative; border: 0; cursor: pointer;
+  border-radius: .6cqw .6cqw 1.1cqw 1.1cqw;
+  background: linear-gradient(180deg, #fffdf6, var(--ivory) 60%, #e6e1d3);
+  box-shadow: 0 .55cqw 0 var(--ivory-lo), 0 .9cqw 1.2cqw rgba(0,0,0,.3), inset 0 -.2cqw 0 rgba(0,0,0,.05);
+  font-family: var(--f-silk); font-weight: 600; color: var(--ink-soft);
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: .9cqw; gap: .2cqw;
+}
+.key .nn { font-size: 1.15cqw; letter-spacing: .1cqw; }
+.key .kb { font-size: .82cqw; opacity: .6; }
+.key.down { transform: translateY(.4cqw); box-shadow: 0 .15cqw 0 var(--ivory-lo), 0 0 1.4cqw rgba(255,181,71,.5); background: linear-gradient(180deg, #fff3da, #ffe0a6); }
+.key.root-lit::before { content: ""; position: absolute; top: 1cqw; width: .7cqw; height: .7cqw; border-radius: 50%; background: var(--amber); box-shadow: 0 0 .6cqw var(--amber); }
+.bkey {
+  position: absolute; top: 0; height: 58%; width: 6.4cqw; translate: -50% 0; z-index: 2;
+  border: 0; cursor: pointer; border-radius: .5cqw .5cqw .9cqw .9cqw;
+  background: linear-gradient(180deg, #4b5047, var(--graphite) 70%, #1f221d);
+  box-shadow: 0 .5cqw 0 #121410, 0 .8cqw 1cqw rgba(0,0,0,.4), inset 0 .12cqw 0 rgba(255,255,255,.12);
+  color: var(--caption); font-family: var(--f-silk); font-weight: 600;
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: .7cqw; gap: .1cqw;
+}
+.bkey .nn { font-size: 1cqw; }
+.bkey .kb { font-size: .78cqw; opacity: .6; }
+.bkey.down { transform: translate(0, .35cqw); box-shadow: 0 .12cqw 0 #121410, 0 0 1.3cqw rgba(255,181,71,.55); background: linear-gradient(180deg, #6b5a3c, #3f3420); }
+.bkey.root-lit::before { content: ""; position: absolute; top: .9cqw; width: .6cqw; height: .6cqw; border-radius: 50%; background: var(--amber); box-shadow: 0 0 .6cqw var(--amber); }
+
+.power .led.beat { background: var(--amber); box-shadow: 0 0 .5cqw var(--amber), 0 0 1.2cqw rgba(255,181,71,.6); }
+.meter { width: 6cqw; height: .5cqw; border-radius: .25cqw; background: rgba(40,48,38,.25); overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--ink-soft); transition: width .05s linear; }
+.meter i.hot { background: #c4462f; }
+@media (prefers-reduced-motion: reduce) {
+  .dial .cap, .cbtn, .overlay { transition: none; }
+  .chord-name.wtf { animation: none; }
+}
+</style>
+</head>
+<body>
+<main class="device" aria-label="Handful HF-1 chord synthesizer">
+  <div class="shell" id="shell">
+    <header class="brandbar">
+      <span class="brand">HANDFUL</span>
+      <span class="model">HF-1 · CHORD SYNTHESIZER</span>
+      <span class="grille" aria-hidden="true"></span>
+      <span class="meter" aria-hidden="true"><i id="meter"></i></span>
+      <span class="power"><i class="led" id="sync-led"></i>HOST SYNC</span>
+    </header>
+
+    <div class="top">
+      <div class="chords">
+        <span class="silk">Chord · type / extension</span>
+        <div class="chord-row" id="row-types"></div>
+        <div class="chord-row" id="row-exts"></div>
+      </div>
+
+      <div class="bezel">
+        <div class="screen">
+          <div class="s-top"><span id="s-key">KEY OFF</span><span id="s-style" class="dim">ADVANCED</span><span id="s-perform">BLOCK</span></div>
+          <div class="s-chord"><span class="chord-name" id="chord-name">—</span><span class="chord-notes" id="chord-notes">hold a chord button, play a key</span></div>
+          <div class="strip" id="strip" aria-hidden="true"></div>
+          <div class="s-bot"><span id="s-sound">—</span><span id="s-bass" class="dim">BASS —</span><span id="s-tempo">♩ — BPM</span></div>
+          <div class="overlay" id="overlay" aria-hidden="true">
+            <span class="ov-name" id="ov-name"></span>
+            <span class="ov-value" id="ov-value"></span>
+            <div class="ov-bar" id="ov-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dials">
+        <div class="dial-wrap">
+          <div class="dial big" id="dial-voicing" role="slider" tabindex="0" aria-label="Voicing" aria-valuemin="-12" aria-valuemax="12" aria-valuenow="0">
+            <span class="ticks"></span><span class="cap"></span>
+          </div>
+          <div class="dial-label">
+            <span class="silk">Voicing</span>
+            <div class="mode-switch" role="group" aria-label="Voicing mode">
+              <button id="mode-oct" aria-pressed="true">OCT</button>
+              <button id="mode-split" aria-pressed="false">SPLIT</button>
+            </div>
+          </div>
+        </div>
+        <div class="dial-wrap">
+          <div class="dial small" id="dial-bass" role="slider" tabindex="0" aria-label="Bass voicing" aria-valuemin="-4" aria-valuemax="4" aria-valuenow="0">
+            <span class="ticks"></span><span class="cap"></span>
+          </div>
+          <span class="silk">Bass</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div class="toggles">
+        <button class="tbtn" id="t-key" aria-pressed="false"><i class="led"></i>KEY</button>
+        <button class="tbtn" id="t-latch" aria-pressed="false"><i class="led"></i>LATCH</button>
+        <button class="tbtn" id="t-bass" aria-pressed="true"><i class="led"></i>BASS</button>
+        <button class="tbtn" id="t-style">STYLE <span class="val" id="t-style-val">ADV</span></button>
+        <button class="tbtn" id="t-octdn">OCT −</button>
+        <button class="tbtn" id="t-octup">OCT + <span class="val" id="t-oct-val">4</span></button>
+      </div>
+      <div class="encoders" id="encoders"></div>
+    </div>
+
+    <div class="keys" id="keys"></div>
+  </div>
+</main>
+
+<script>
+(() => {
+  "use strict";
+  // ------------------------------------------------------------------ bridge to the C++ side
+  const backend = window.__JUCE__ && window.__JUCE__.backend;
+  const send = (obj) => { if (backend) backend.emitEvent("ui", obj); };
+  const setParam = (id, value) => { touched[id] = performance.now(); P[id] = value; send({ type: "param", id, value }); };
+  const gesture = (id, begin) => send({ type: "gesture", id, begin });
+
+  // ------------------------------------------------------------------ state mirrored from the engine
+  const NOTE = ["C","C#","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
+  const BUTTONS = ["dim","min","maj","sus","6","m7","M7","9"];
+  const LABEL = { dim: "DIM", min: "MIN", maj: "MAJ", sus: "SUS", "6": "6", m7: "m7", M7: "M7", "9": "9" };
+  const HINT = { dim: "1", min: "2", maj: "3", sus: "4", "6": "Q", m7: "W", M7: "E", "9": "R" };
+  const STYLES = ["SIMPLE", "ADVANCED", "FREE"];
+  const PATTERN_MODE = 6;
+
+  const META = {
+    sound: ["Dream Pad","Tine Keys","Warm Poly","Glass Bell","Soft Brass","String Machine","Pluck","FM Organ","Velvet EP","Wobble Choir"],
+    perform: ["Block","Strum","Strum 2 Oct","Slop","Arp","Arp 2 Oct","Pattern","Harp"],
+    arpRate: ["1/4","1/8","1/8T","1/16","1/16T","1/32"],
+    pattern: ["Pulse","Alberti","Bounce","Offbeat","Ripple"],
+    key: [], style: ["Simple","Advanced","Free"],
+  };
+  ["major","minor"].forEach(sc => NOTE.forEach(n => META.key.push(n + " " + sc)));
+
+  const P = { sound: 2, perform: 0, arpRate: 3, pattern: 0, key: 0, keyMode: 0, style: 1, voicing: 0, voicingMode: 0,
+              bassVoicing: 0, bassOn: 1, latch: 0, tone: .5, chorus: .5, delay: .2, space: .4, octave: 4 };
+  const touched = {};
+  let booted = false;
+  const FLASHABLE = new Set(["voicing", "bassVoicing", "sound", "perform", "arpRate", "pattern", "key", "tone", "chorus", "delay", "space"]);
+  const PCT = v => Math.round(v * 100) + "%";
+  function describe(id, v) {
+    const r = Math.round(v), signed = (r > 0 ? "+" : "") + r;
+    switch (id) {
+      case "voicing":     return ["Voicing", signed, (r + 12) / 24];
+      case "bassVoicing": return ["Bass voicing", signed, (r + 4) / 8];
+      case "tone":        return ["Tone", (v >= .5 ? "+" : "") + Math.round((v - .5) * 60) + " st", v];
+      case "chorus": case "delay": case "space":
+        return [id, PCT(v), v];
+      default: {
+        const list = META[id] || [];
+        return [id === "arpRate" ? "Rate" : id, (list[r] || "").toUpperCase(), r / Math.max(1, list.length - 1)];
+      }
+    }
+  }
+  let snap = { label: "", notes: [], root: -1, bass: -1, buttons: 0, keyNote: -1, bpm: 110, playing: false, peak: 0 };
+
+  if (backend) {
+    backend.addEventListener("meta", (m) => { Object.assign(META, m); render(); });
+    backend.addEventListener("state", (s) => {
+      snap = s;
+      const now = performance.now();
+      let changed = null;
+      for (const [id, v] of Object.entries(s.params || {})) {
+        if (touched[id] && now - touched[id] < 400) continue;
+        if (P[id] !== v && FLASHABLE.has(id) && booted) changed = id;
+        P[id] = v;
+      }
+      booted = true;
+      // A change that did not come from this panel (hardware knob, automation): show it.
+      if (changed) { const [name, text, frac] = describe(changed, P[changed]); flash(name, text, frac); }
+      render();
+    });
+  }
+
+  // ------------------------------------------------------------------ build controls
+  const $ = (id) => document.getElementById(id);
+  const btnEls = [];
+  [["row-types", 0, "type"], ["row-exts", 4, "ext"]].forEach(([rowId, offset, cls]) => {
+    for (let i = 0; i < 4; i++) {
+      const name = BUTTONS[offset + i];
+      const b = document.createElement("button");
+      b.className = "cbtn " + cls;
+      b.setAttribute("aria-pressed", "false");
+      b.innerHTML = `<i class="led"></i>${LABEL[name]}<span class="hint">${HINT[name]}</span>`;
+      b.addEventListener("click", () => send({ type: "button", index: offset + i, on: !(snap.buttons & (1 << (offset + i))) }));
+      $(rowId).appendChild(b);
+      btnEls.push(b);
+    }
+  });
+
+  const ENCODERS = [
+    { id: "sound",   label: "Sound",   list: "sound" },
+    { id: "perform", label: "Perform", list: "perform" },
+    { id: "arpRate", label: "Rate",    list: "arpRate" },
+    { id: "key",     label: "Key",     list: "key" },
+    { id: "tone",    label: "Tone",    fmt: v => (v >= .5 ? "+" : "") + Math.round((v - .5) * 5 * 12) + " st" },
+    { id: "chorus",  label: "Chorus",  fmt: v => Math.round(v * 100) + "%" },
+    { id: "delay",   label: "Delay",   fmt: v => Math.round(v * 100) + "%" },
+    { id: "space",   label: "Space",   fmt: v => Math.round(v * 100) + "%" },
+  ];
+  // In Pattern mode the Rate encoder picks the pattern instead.
+  const encParam = (enc) => (enc.id === "arpRate" && P.perform === PATTERN_MODE) ? { ...enc, id: "pattern", label: "Pattern", list: "pattern" } : enc;
+  const encSteps = (enc) => enc.list ? META[enc.list].length : 0;
+  const encShow = (enc, v) => enc.list ? (META[enc.list][v] || "").toUpperCase() : enc.fmt(v);
+
+  const encEls = {};
+  const wrap = $("encoders");
+  ENCODERS.forEach(base => {
+    const el = document.createElement("div");
+    el.className = "enc";
+    el.innerHTML = `<div class="knob${base.list ? " stepped" : ""}" role="slider" tabindex="0" aria-label="${base.label}"><span class="ring"></span><span class="body"></span></div><span class="silk">${base.label}</span>`;
+    wrap.appendChild(el);
+    const knob = el.querySelector(".knob");
+    encEls[base.id] = { knob, label: el.querySelector(".silk") };
+    rotary(knob, () => encParam(base).id, (delta, fine) => {
+      const enc = encParam(base), steps = encSteps(enc);
+      let v = P[enc.id] + (steps ? delta : delta * (fine ? .004 : .02));
+      v = steps ? Math.max(0, Math.min(steps - 1, Math.round(v))) : Math.max(0, Math.min(1, v));
+      if (v === P[enc.id]) return;
+      setParam(enc.id, v);
+      flash(enc.label, encShow(enc, v), steps ? v / Math.max(1, steps - 1) : v);
+      render();
+    }, base.list ? 14 : 3);
+  });
+
+  function rotary(el, paramId, onStep, pxPerStep) {
+    let y0 = null, acc = 0, id = null;
+    el.addEventListener("pointerdown", e => {
+      y0 = e.clientY; acc = 0; id = paramId(); gesture(id, true);
+      el.setPointerCapture(e.pointerId); e.preventDefault(); el.focus();
+    });
+    el.addEventListener("pointermove", e => {
+      if (y0 == null) return;
+      acc += y0 - e.clientY; y0 = e.clientY;
+      while (Math.abs(acc) >= pxPerStep) { const d = Math.sign(acc); onStep(d, e.shiftKey); acc -= d * pxPerStep; }
+    });
+    const end = () => { if (y0 != null) gesture(id, false); y0 = null; };
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+    el.addEventListener("wheel", e => { e.preventDefault(); onStep(e.deltaY < 0 ? 1 : -1, e.shiftKey); }, { passive: false });
+    el.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp" || e.key === "ArrowRight") { onStep(1, e.shiftKey); e.preventDefault(); e.stopPropagation(); }
+      if (e.key === "ArrowDown" || e.key === "ArrowLeft") { onStep(-1, e.shiftKey); e.preventDefault(); e.stopPropagation(); }
+    });
+  }
+
+  let flashTimer = null;
+  const bar = $("ov-bar");
+  for (let i = 0; i < 24; i++) bar.appendChild(document.createElement("i"));
+  function flash(name, value, frac) {
+    $("ov-name").textContent = name.toUpperCase();
+    $("ov-value").textContent = value;
+    [...bar.children].forEach((c, i) => c.classList.toggle("lit", i < Math.round(frac * 24)));
+    $("overlay").classList.add("show");
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => $("overlay").classList.remove("show"), 1100);
+  }
+
+  // Keys
+  const WHITE = [0, 2, 4, 5, 7, 9, 11, 12], BLACK = [1, 3, 6, 8, 10];
+  const KB = ["z","s","x","d","c","v","g","b","h","n","j","m",","];
+  const keyEls = {};
+  const downKeys = new Map(); // key index -> MIDI note sent
+  WHITE.forEach(i => addKey(i, "key"));
+  BLACK.forEach(i => addKey(i, "bkey"));
+  function addKey(i, cls) {
+    const k = document.createElement("button");
+    k.className = cls;
+    if (cls === "bkey") k.style.left = `calc(${WHITE.indexOf(i - 1) + 1} * (100% + .7cqw) / 8 - .35cqw)`;
+    k.innerHTML = `<span class="nn">${NOTE[i % 12]}</span><span class="kb">${KB[i].toUpperCase()}</span>`;
+    k.addEventListener("pointerdown", e => { k.setPointerCapture(e.pointerId); keyDown(i); });
+    k.addEventListener("pointerup", () => keyUp(i));
+    k.addEventListener("pointercancel", () => keyUp(i));
+    $("keys").appendChild(k);
+    keyEls[i] = k;
+  }
+  function keyDown(i) {
+    if (downKeys.has(i)) return;
+    const note = 12 * (P.octave + 1) + i;
+    downKeys.set(i, note);
+    send({ type: "key", note, down: true, velocity: 100 });
+    render();
+  }
+  function keyUp(i) {
+    if (!downKeys.has(i)) return;
+    send({ type: "key", note: downKeys.get(i), down: false });
+    downKeys.delete(i);
+    render();
+  }
+
+  // Dials and toggles
+  rotary($("dial-voicing"), () => "voicing", d => {
+    const v = Math.max(-12, Math.min(12, P.voicing + d));
+    if (v === P.voicing) return;
+    setParam("voicing", v); flash("Voicing", (v > 0 ? "+" : "") + v, (v + 12) / 24); render();
+  }, 16);
+  rotary($("dial-bass"), () => "bassVoicing", d => {
+    const v = Math.max(-4, Math.min(4, P.bassVoicing + d));
+    if (v === P.bassVoicing) return;
+    setParam("bassVoicing", v); flash("Bass voicing", (v > 0 ? "+" : "") + v, (v + 4) / 8); render();
+  }, 20);
+  $("mode-oct").addEventListener("click", () => { setParam("voicingMode", 0); render(); });
+  $("mode-split").addEventListener("click", () => { setParam("voicingMode", 1); render(); });
+  $("t-key").addEventListener("click", () => { setParam("keyMode", P.keyMode ? 0 : 1); render(); });
+  $("t-latch").addEventListener("click", () => { setParam("latch", P.latch ? 0 : 1); render(); });
+  $("t-bass").addEventListener("click", () => { setParam("bassOn", P.bassOn ? 0 : 1); render(); });
+  $("t-style").addEventListener("click", () => {
+    const v = (Math.round(P.style) + 1) % 3;
+    setParam("style", v); flash("Playstyle", STYLES[v], v / 2); render();
+  });
+  $("t-octdn").addEventListener("click", () => { setParam("octave", Math.max(1, P.octave - 1)); render(); });
+  $("t-octup").addEventListener("click", () => { setParam("octave", Math.min(7, P.octave + 1)); render(); });
+
+  // ------------------------------------------------------------------ render
+  const strip = $("strip");
+  const STRIP_LO = 36;
+  for (let n = 0; n < 48; n++) {
+    const c = document.createElement("i");
+    if (BLACK.includes(n % 12)) c.classList.add("blk");
+    strip.appendChild(c);
+  }
+  const nn = (n, oct) => NOTE[((n % 12) + 12) % 12] + (oct ? (Math.floor(n / 12) - 1) : "");
+
+  function render() {
+    btnEls.forEach((b, i) => b.setAttribute("aria-pressed", !!(snap.buttons & (1 << i))));
+
+    const label = snap.label || "—";
+    const nameEl = $("chord-name");
+    if (nameEl.textContent !== label) {
+      nameEl.textContent = label;
+      nameEl.classList.toggle("wtf", label.includes("WTF"));
+      nameEl.style.setProperty("--name-size", label.length <= 6 ? "5.6cqw" : label.length <= 9 ? "4.3cqw" : "3.3cqw");
+    }
+    $("chord-notes").textContent = snap.notes.length ? snap.notes.map(n => nn(n, true)).join(" ") : "hold a chord button, play a key";
+
+    const key = META.key[Math.round(P.key)] || "C major";
+    $("s-key").textContent = P.keyMode ? "KEY " + key.replace("major", "MAJOR").replace("minor", "MINOR") : "KEY OFF";
+    $("s-style").textContent = STYLES[Math.round(P.style)] || "";
+    const pm = (META.perform[Math.round(P.perform)] || "").toUpperCase();
+    $("s-perform").textContent = Math.round(P.perform) === PATTERN_MODE ? `${pm} ${(META.pattern[Math.round(P.pattern)] || "").toUpperCase()}`
+                               : pm.startsWith("ARP") ? `${pm} ${META.arpRate[Math.round(P.arpRate)] || ""}` : pm;
+    $("s-sound").textContent = String(Math.round(P.sound) + 1).padStart(2, "0") + " " + (META.sound[Math.round(P.sound)] || "").toUpperCase();
+    $("s-bass").textContent = P.bassOn ? (snap.bass >= 0 ? "BASS " + nn(snap.bass, true) : "BASS ON") : "BASS OFF";
+    $("s-tempo").textContent = `${snap.playing ? "▶" : "♩"} ${Math.round(snap.bpm)} BPM`;
+    $("sync-led").classList.toggle("beat", !!snap.playing);
+    const meter = $("meter");
+    meter.style.width = Math.min(100, Math.round((snap.peak || 0) * 100)) + "%";
+    meter.classList.toggle("hot", (snap.peak || 0) > .97);
+
+    [...strip.children].forEach((c, i) => {
+      const n = STRIP_LO + i;
+      c.classList.toggle("lit", snap.notes.includes(n));
+      c.classList.toggle("bass", snap.bass === n);
+    });
+
+    ENCODERS.forEach(base => {
+      const enc = encParam(base), steps = encSteps(enc), v = P[enc.id];
+      const { knob, label: lbl } = encEls[base.id];
+      knob.style.setProperty("--v", steps ? v / Math.max(1, steps - 1) : v);
+      if (steps) knob.style.setProperty("--steps", Math.max(1, steps - 1));
+      knob.setAttribute("aria-valuetext", encShow(enc, v));
+      lbl.textContent = enc.label;
+    });
+    $("dial-voicing").style.setProperty("--angle", (P.voicing * 11.25) + "deg");
+    $("dial-voicing").setAttribute("aria-valuenow", P.voicing);
+    $("dial-bass").style.setProperty("--angle", (P.bassVoicing * 33.75) + "deg");
+    $("dial-bass").setAttribute("aria-valuenow", P.bassVoicing);
+    $("mode-oct").setAttribute("aria-pressed", Math.round(P.voicingMode) === 0);
+    $("mode-split").setAttribute("aria-pressed", Math.round(P.voicingMode) === 1);
+    $("t-key").setAttribute("aria-pressed", !!P.keyMode);
+    $("t-latch").setAttribute("aria-pressed", !!P.latch);
+    $("t-bass").setAttribute("aria-pressed", !!P.bassOn);
+    $("t-style-val").textContent = (STYLES[Math.round(P.style)] || "").slice(0, 3);
+    $("t-oct-val").textContent = P.octave;
+
+    const rootPc = snap.root >= 0 ? snap.root % 12 : null;
+    Object.entries(keyEls).forEach(([i, el]) => {
+      i = +i;
+      el.classList.toggle("down", downKeys.has(i));
+      el.classList.toggle("root-lit", rootPc != null && i % 12 === rootPc && !downKeys.has(i));
+    });
+  }
+
+  // ------------------------------------------------------------------ computer keyboard
+  const KEYBTN = { "1": 0, "2": 1, "3": 2, "4": 3, q: 4, w: 5, e: 6, r: 7 };
+  window.addEventListener("keydown", e => {
+    if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (KB.includes(k)) { keyDown(KB.indexOf(k)); e.preventDefault(); return; }
+    if (k in KEYBTN) { send({ type: "button", index: KEYBTN[k], on: true }); e.preventDefault(); return; }
+    if (document.activeElement && document.activeElement.getAttribute("role") === "slider") return;
+    const v = P.voicing, b = P.bassVoicing;
+    if (e.key === "ArrowLeft")  { setParam("voicing", Math.max(-12, v - 1)); render(); e.preventDefault(); }
+    if (e.key === "ArrowRight") { setParam("voicing", Math.min(12, v + 1)); render(); e.preventDefault(); }
+    if (e.key === "ArrowUp")    { setParam("bassVoicing", Math.min(4, b + 1)); render(); e.preventDefault(); }
+    if (e.key === "ArrowDown")  { setParam("bassVoicing", Math.max(-4, b - 1)); render(); e.preventDefault(); }
+    if (e.key === "Escape")     { send({ type: "panic" }); }
+  });
+  window.addEventListener("keyup", e => {
+    const k = e.key.toLowerCase();
+    if (KB.includes(k)) { keyUp(KB.indexOf(k)); return; }
+    if (k in KEYBTN) send({ type: "button", index: KEYBTN[k], on: false });
+  });
+  window.addEventListener("blur", () => [...downKeys.keys()].forEach(keyUp));
+  window.addEventListener("contextmenu", e => e.preventDefault());
+
+  render();
+  send({ type: "ready" });
+})();
+</script>
+</body>
+</html>

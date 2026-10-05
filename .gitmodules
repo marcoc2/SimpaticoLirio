@@ -1,0 +1,4 @@
+[submodule "plugin/external/JUCE"]
+	path = plugin/external/JUCE
+	url = https://github.com/juce-framework/JUCE.git
+	shallow = true

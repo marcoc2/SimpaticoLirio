@@ -1,0 +1,22 @@
+# Build output
+plugin/build/
+build/
+
+# Downloaded at configure time (see plugin/CMakeLists.txt)
+plugin/external/nuget/
+
+# Python
+__pycache__/
+*.pyc
+*.nbi
+*.nbc
+
+# Local settings written by `python -m handful_proto --learn`
+handful_config.json
+
+# Editors / OS
+.vs/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
