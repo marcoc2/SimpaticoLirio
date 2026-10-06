@@ -39,6 +39,12 @@ lirio_proto/   the Python prototype (pygame panel, numba DSP)
 docs/            screenshots
 ```
 
+## Download
+
+Windows 10/11 (64-bit) builds of the VST3 plugin and the standalone app are on the
+[Releases page](https://github.com/marcoc2/SimpaticoLirio/releases/latest). Copy
+`Simpatico Lirio.vst3` to `C:\Program Files\Common Files\VST3` and rescan in your DAW.
+
 ## Build the plugin (Windows)
 
 Requirements: Visual Studio 2022 Build Tools (C++ workload), CMake 3.22+, git.
