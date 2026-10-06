@@ -44,13 +44,14 @@ docs/            screenshots
 Requirements: Visual Studio 2022 Build Tools (C++ workload), CMake 3.22+, git.
 
 ```
-git clone --recursive https://github.com/marcoc2/SimpaticoLirio.git
+git clone -c core.longpaths=true --recursive https://github.com/marcoc2/SimpaticoLirio.git
 cd SimpaticoLirio/plugin
 cmake -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
 ```
 
-The first configure downloads the WebView2 SDK from nuget.org. The VST3 ends up in
+`core.longpaths` avoids "Filename too long" errors in JUCE's example folders when the clone
+lives in a deep Windows path. The first configure downloads the WebView2 SDK from nuget.org. The VST3 ends up in
 `plugin/build/SimpaticoLirio_artefacts/Release/VST3/`. Copy it to `C:\Program Files\Common Files\VST3`
 and rescan in your DAW. See [plugin/README.md](plugin/README.md) for controls, MIDI mapping and
 the UI bridge.
