@@ -5,8 +5,8 @@
 #include <array>
 #include <vector>
 
-// Voice engines and effects, ported from handful_proto/dsp.py and handful_proto/synth.py.
-namespace hf
+// Voice engines and effects, ported from lirio_proto/dsp.py and lirio_proto/synth.py.
+namespace sl
 {
 enum class Engine : int { Analog = 0, FM = 1, EPiano = 2 };
 

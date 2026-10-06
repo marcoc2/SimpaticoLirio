@@ -17,13 +17,13 @@ const char* mimeFor (const juce::String& file)
     return "application/octet-stream";
 }
 
-juce::WebBrowserComponent::Options makeOptions (HandfulEditor& editor,
+juce::WebBrowserComponent::Options makeOptions (LirioEditor& editor,
                                                 std::function<void (const juce::var&)> onMessage,
                                                 juce::WebBrowserComponent::ResourceProvider provider)
 {
     using Options = juce::WebBrowserComponent::Options;
     const auto dataFolder = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-                                .getChildFile ("Handful").getChildFile ("WebView2");
+                                .getChildFile ("Simpatico Lirio").getChildFile ("WebView2");
     juce::ignoreUnused (editor);
     return Options {}
         .withBackend (Options::Backend::webview2)
@@ -40,7 +40,7 @@ juce::WebBrowserComponent::Options makeOptions (HandfulEditor& editor,
 }
 
 //==============================================================================
-HandfulEditor::HandfulEditor (HandfulProcessor& p)
+LirioEditor::LirioEditor (LirioProcessor& p)
     : AudioProcessorEditor (&p),
       processor (p),
       browser (makeOptions (*this,
@@ -59,35 +59,35 @@ HandfulEditor::HandfulEditor (HandfulProcessor& p)
     startTimerHz (30);
 }
 
-HandfulEditor::~HandfulEditor()
+LirioEditor::~LirioEditor()
 {
     stopTimer();
 }
 
-void HandfulEditor::resized()
+void LirioEditor::resized()
 {
     browser.setBounds (getLocalBounds());
 }
 
-void HandfulEditor::paint (juce::Graphics& g)
+void LirioEditor::paint (juce::Graphics& g)
 {
     g.fillAll (juce::Colour (0xff161814));
 }
 
 //==============================================================================
-std::optional<juce::WebBrowserComponent::Resource> HandfulEditor::getResource (const juce::String& url) const
+std::optional<juce::WebBrowserComponent::Resource> LirioEditor::getResource (const juce::String& url) const
 {
     auto path = url.upToFirstOccurrenceOf ("?", false, false).trimCharactersAtStart ("/");
     if (path.isEmpty())
         path = "index.html";
     const auto fileName = path.fromLastOccurrenceOf ("/", false, false);
 
-    for (int i = 0; i < HandfulUI::namedResourceListSize; ++i)
+    for (int i = 0; i < LirioUI::namedResourceListSize; ++i)
     {
-        if (fileName == HandfulUI::originalFilenames[i])
+        if (fileName == LirioUI::originalFilenames[i])
         {
             int size = 0;
-            if (const auto* data = HandfulUI::getNamedResource (HandfulUI::namedResourceList[i], size))
+            if (const auto* data = LirioUI::getNamedResource (LirioUI::namedResourceList[i], size))
             {
                 std::vector<std::byte> bytes ((size_t) size);
                 std::memcpy (bytes.data(), data, (size_t) size);
@@ -99,7 +99,7 @@ std::optional<juce::WebBrowserComponent::Resource> HandfulEditor::getResource (c
 }
 
 //==============================================================================
-void HandfulEditor::handleUiMessage (const juce::var& m)
+void LirioEditor::handleUiMessage (const juce::var& m)
 {
     const auto type = m["type"].toString();
 
@@ -112,17 +112,17 @@ void HandfulEditor::handleUiMessage (const juce::var& m)
     if (type == "key")
     {
         const int velocity = (bool) m["down"] ? juce::jlimit (1, 127, (int) m["velocity"]) : 0;
-        processor.engine.postUiEvent ({ hf::UiEvent::Key, (int) m["note"], velocity });
+        processor.engine.postUiEvent ({ sl::UiEvent::Key, (int) m["note"], velocity });
         return;
     }
     if (type == "button")
     {
-        processor.engine.postUiEvent ({ hf::UiEvent::ButtonToggle, (int) m["index"], (bool) m["on"] ? 1 : 0 });
+        processor.engine.postUiEvent ({ sl::UiEvent::ButtonToggle, (int) m["index"], (bool) m["on"] ? 1 : 0 });
         return;
     }
     if (type == "panic")
     {
-        processor.engine.postUiEvent ({ hf::UiEvent::Panic, 0, 0 });
+        processor.engine.postUiEvent ({ sl::UiEvent::Panic, 0, 0 });
         return;
     }
     if (type == "gesture" || type == "param")
@@ -140,19 +140,19 @@ void HandfulEditor::handleUiMessage (const juce::var& m)
     }
 }
 
-void HandfulEditor::sendMeta()
+void LirioEditor::sendMeta()
 {
     auto* meta = new juce::DynamicObject();
     for (const auto* id : { "sound", "bassSound", "perform", "arpRate", "pattern", "key", "style", "chordInput" })
     {
         juce::Array<juce::var> list;
-        for (const auto& s : HandfulProcessor::choicesFor (id)) list.add (s);
+        for (const auto& s : LirioProcessor::choicesFor (id)) list.add (s);
         meta->setProperty (id, list);
     }
     browser.emitEventIfBrowserIsVisible ("meta", juce::var (meta));
 }
 
-juce::var HandfulEditor::buildState() const
+juce::var LirioEditor::buildState() const
 {
     const auto snap = processor.engine.getSnapshot();
     auto* obj = new juce::DynamicObject();
@@ -176,7 +176,7 @@ juce::var HandfulEditor::buildState() const
     return juce::var (obj);
 }
 
-void HandfulEditor::timerCallback()
+void LirioEditor::timerCallback()
 {
     if (pageReady)
         browser.emitEventIfBrowserIsVisible ("state", buildState());

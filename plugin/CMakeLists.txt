@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(Handful VERSION 0.1.0 LANGUAGES C CXX)
+project(SimpaticoLirio VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,12 +23,12 @@ set(JUCE_WEBVIEW2_PACKAGE_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/external/nuget" 
 
 add_subdirectory(external/JUCE)
 
-juce_add_plugin(Handful
-    COMPANY_NAME "Handful Instruments"
-    BUNDLE_ID "com.handful.hf1"
-    PLUGIN_MANUFACTURER_CODE Hndf
-    PLUGIN_CODE Hf01
-    PRODUCT_NAME "Handful HF-1"
+juce_add_plugin(SimpaticoLirio
+    COMPANY_NAME "marcoc2"
+    BUNDLE_ID "com.marcoc2.simpaticolirio"
+    PLUGIN_MANUFACTURER_CODE Mrc2
+    PLUGIN_CODE Slr1
+    PRODUCT_NAME "Simpatico Lirio"
     FORMATS VST3 Standalone
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
@@ -39,8 +39,8 @@ juce_add_plugin(Handful
     VST3_CATEGORIES Instrument Synth
     COPY_PLUGIN_AFTER_BUILD FALSE)
 
-juce_add_binary_data(HandfulUI
-    NAMESPACE HandfulUI
+juce_add_binary_data(LirioUI
+    NAMESPACE LirioUI
     SOURCES
         ui/index.html
         ui/fonts/DotGothic16-Regular.ttf
@@ -48,7 +48,7 @@ juce_add_binary_data(HandfulUI
         ui/fonts/BarlowSemiCondensed-SemiBold.ttf
         ui/fonts/BarlowSemiCondensed-Bold.ttf)
 
-target_sources(Handful PRIVATE
+target_sources(SimpaticoLirio PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
     Source/ChordEngine.cpp
@@ -56,16 +56,16 @@ target_sources(Handful PRIVATE
     Source/Synth.cpp
     Source/Theory.cpp)
 
-target_compile_definitions(Handful PUBLIC
+target_compile_definitions(SimpaticoLirio PUBLIC
     JUCE_WEB_BROWSER=1
     JUCE_USE_WIN_WEBVIEW2_WITH_STATIC_LINKING=1
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0
     JUCE_DISPLAY_SPLASH_SCREEN=0)
 
-target_link_libraries(Handful
+target_link_libraries(SimpaticoLirio
     PRIVATE
-        HandfulUI
+        LirioUI
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_gui_extra
@@ -75,4 +75,4 @@ target_link_libraries(Handful
         juce::juce_recommended_warning_flags)
 
 # Plain C++ check of the chord logic against the Python prototype (no JUCE needed).
-add_executable(HandfulTheoryTest tests/TheoryTest.cpp Source/Theory.cpp)
+add_executable(LirioTheoryTest tests/TheoryTest.cpp Source/Theory.cpp)

@@ -1,4 +1,4 @@
-"""Entry point: python -m handful_proto [--learn] [--list] [--no-gui] [--no-audio]"""
+"""Entry point: python -m lirio_proto [--learn] [--list] [--no-gui] [--no-audio]"""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import sounddevice as sd
 from .config import load_config
 from .engine import Engine
 
-DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent.parent / "handful_config.json"
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent.parent / "lirio_config.json"
 
 
 def list_devices():
@@ -75,7 +75,7 @@ def warm_up(sr: int, config: dict):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="handful_proto", description="Chord synth driven by MIDI (Handful HF-1 prototype)")
+    parser = argparse.ArgumentParser(prog="lirio_proto", description="Chord synth driven by MIDI (Simpático Lírio prototype)")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
     parser.add_argument("--learn", action="store_true", help="map your MIDI controller interactively")
     parser.add_argument("--list", action="store_true", help="list MIDI and audio devices")

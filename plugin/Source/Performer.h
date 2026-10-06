@@ -7,9 +7,9 @@
 #include <array>
 #include <cstdint>
 
-// Perform modes, ported from handful_proto/perform.py. Timing runs on an absolute sample clock;
+// Perform modes, ported from lirio_proto/perform.py. Timing runs on an absolute sample clock;
 // clocked modes (arp, pattern) lock to a sixteenth grid derived from the host tempo.
-namespace hf
+namespace sl
 {
 enum class PerformMode : int { Block, Strum, Strum2Oct, Slop, Arp, Arp2Oct, Pattern, Harp, NumModes };
 

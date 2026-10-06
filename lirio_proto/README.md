@@ -1,4 +1,4 @@
-# Handful prototype (Python)
+# Simpático Lírio prototype (Python)
 
 The first version of the chord synth, written in Python: pygame front panel, numba DSP,
 MIDI in and out through mido. The VST3 plugin in `../plugin` is a C++ port of this code, and
@@ -17,11 +17,11 @@ pip install -r requirements.txt
 ## Run
 
 ```
-python -m handful_proto                 # front panel + audio
-python -m handful_proto --list          # list MIDI and audio devices
-python -m handful_proto --learn         # map your controller (writes handful_config.json)
-python -m handful_proto --no-gui        # headless, MIDI only
-python -m handful_proto --midi-out loopMIDI --no-audio   # drive a DAW instead of the built-in synth
+python -m lirio_proto                 # front panel + audio
+python -m lirio_proto --list          # list MIDI and audio devices
+python -m lirio_proto --learn         # map your controller (writes lirio_config.json)
+python -m lirio_proto --no-gui        # headless, MIDI only
+python -m lirio_proto --midi-out loopMIDI --no-audio   # drive a DAW instead of the built-in synth
 ```
 
 The first start compiles the DSP with numba, which takes a few seconds. Later starts use the cache.
@@ -36,9 +36,9 @@ By default:
 - **Knobs**: CC 72-77 for cutoff, resonance, reverb, delay, chorus and perform mode.
 - **Sustain pedal (CC 64)**: latches the chord.
 
-If your controller differs, run `python -m handful_proto --learn`. It asks you to press and turn
+If your controller differs, run `python -m lirio_proto --learn`. It asks you to press and turn
 each control, detects relative encoders on its own, and saves the mapping to
-`handful_config.json`. You can also edit that file by hand. `config.py` documents
+`lirio_config.json`. You can also edit that file by hand. `config.py` documents
 every key.
 
 ## Computer keyboard
@@ -68,7 +68,7 @@ dial, click a dial to switch voicing mode or toggle the bass.
 ## Layout
 
 ```
-handful_proto/
+lirio_proto/
   theory.py    chord buttons, playstyles, key mode, voicing and bass logic
   dsp.py       numba kernels: voices (analog / FM / EP), SVF filter, chorus, delay, reverb
   synth.py     voice allocation, FX chain

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace hf
+namespace sl
 {
 namespace
 {

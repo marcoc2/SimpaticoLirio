@@ -8,9 +8,9 @@
 
 #include <array>
 
-// The instrument: chord state, MIDI in/out, perform modes, sound. Ported from handful_proto/engine.py.
+// The instrument: chord state, MIDI in/out, perform modes, sound. Ported from lirio_proto/engine.py.
 // Everything here runs on the audio thread, except postUiEvent() and getSnapshot().
-namespace hf
+namespace sl
 {
 /** Values read from the plugin parameters at the start of every block. */
 struct EngineSettings

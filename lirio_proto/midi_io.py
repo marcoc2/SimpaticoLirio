@@ -1,4 +1,4 @@
-"""MIDI input mapping (controller -> Handful controls) and the MIDI output thread."""
+"""MIDI input mapping (controller -> Simpático Lírio controls) and the MIDI output thread."""
 
 from __future__ import annotations
 

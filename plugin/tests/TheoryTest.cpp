@@ -1,12 +1,12 @@
 // Prints chord names/notes for every button combination so the output can be diffed
-// against the Python prototype (handful_proto/theory.py). Run: HandfulTheoryTest > cpp.txt
+// against the Python prototype (lirio_proto/theory.py). Run: LirioTheoryTest > cpp.txt
 #include "../Source/Theory.h"
 
 #include <cstdio>
 
 int main()
 {
-    using namespace hf;
+    using namespace sl;
     const char* styles[] = { "SIMPLE", "ADVANCED", "FREE" };
     for (int style = 0; style < 3; ++style)
         for (int mask = 0; mask < 256; ++mask)

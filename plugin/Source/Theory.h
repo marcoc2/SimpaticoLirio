@@ -3,12 +3,12 @@
 #include <array>
 #include <cstdint>
 
-// Chord logic, ported from handful_proto/theory.py (the Python prototype is the reference).
+// Chord logic, ported from lirio_proto/theory.py (the Python prototype is the reference).
 //
 // Eight chord buttons:
 //     top row (chord types):     DIM  MIN  MAJ  SUS
 //     bottom row (extensions):   6    m7   M7   9
-namespace hf
+namespace sl
 {
 enum Button : int { Dim, Min, Maj, Sus, Six, Min7, Maj7, Nine, NumButtons };
 

@@ -52,7 +52,7 @@ HELP = [
 class FrontPanel:
     def __init__(self, engine: Engine, midi_status: str):
         pygame.init()
-        pygame.display.set_caption("Handful prototype")
+        pygame.display.set_caption("Simpático Lírio prototype")
         self.screen = pygame.display.set_mode((W, H))
         self.clock = pygame.time.Clock()
         self.font_big = self._font(64, bold=True)

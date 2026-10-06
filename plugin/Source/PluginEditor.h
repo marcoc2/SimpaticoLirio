@@ -6,12 +6,12 @@
 
 /** The front panel is the web page in ui/index.html, embedded as binary data and shown
     in a WebView2 browser. Events flow both ways through window.__JUCE__.backend. */
-class HandfulEditor : public juce::AudioProcessorEditor,
-                      private juce::Timer
+class LirioEditor : public juce::AudioProcessorEditor,
+                    private juce::Timer
 {
 public:
-    explicit HandfulEditor (HandfulProcessor&);
-    ~HandfulEditor() override;
+    explicit LirioEditor (LirioProcessor&);
+    ~LirioEditor() override;
 
     void resized() override;
     void paint (juce::Graphics&) override;
@@ -23,9 +23,9 @@ private:
     juce::var buildState() const;
     std::optional<juce::WebBrowserComponent::Resource> getResource (const juce::String& url) const;
 
-    HandfulProcessor& processor;
+    LirioProcessor& processor;
     juce::WebBrowserComponent browser;
     bool pageReady = false;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HandfulEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LirioEditor)
 };

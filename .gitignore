@@ -11,8 +11,8 @@ __pycache__/
 *.nbi
 *.nbc
 
-# Local settings written by `python -m handful_proto --learn`
-handful_config.json
+# Local settings written by `python -m lirio_proto --learn`
+lirio_config.json
 
 # Editors / OS
 .vs/

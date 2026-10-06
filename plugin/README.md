@@ -1,7 +1,7 @@
-# Handful HF-1 (VST3 / Standalone)
+# Simpático Lírio (VST3 / Standalone)
 
 The plugin build of the chord synth. It is a C++ port of the Python prototype
-in `../handful_proto`, with a front panel written as a web page (`ui/index.html`) and shown in a
+in `../lirio_proto`, with a front panel written as a web page (`ui/index.html`) and shown in a
 WebView2 browser inside the plugin window.
 
 ## Build (Windows)
@@ -17,8 +17,8 @@ cmake --build build --config Release
 
 Output:
 
-- `build/Handful_artefacts/Release/VST3/Handful HF-1.vst3`
-- `build/Handful_artefacts/Release/Standalone/Handful HF-1.exe`
+- `build/SimpaticoLirio_artefacts/Release/VST3/Simpatico Lirio.vst3`
+- `build/SimpaticoLirio_artefacts/Release/Standalone/Simpatico Lirio.exe`
 
 To use the VST3 in a DAW, copy the `.vst3` folder to `C:\Program Files\Common Files\VST3`
 (or any folder your DAW scans) and rescan.
@@ -39,7 +39,7 @@ Every control on the panel is a host parameter, so it can be automated and MIDI-
 
 ```
 Source/
-  Theory.*          chord buttons, playstyles, key mode, voicing, bass (matches handful_proto/theory.py)
+  Theory.*          chord buttons, playstyles, key mode, voicing, bass (matches lirio_proto/theory.py)
   Performer.*       perform modes on the sample clock
   Synth.*           voice engines (analog / FM / EP), presets, chorus, ping-pong delay
   ChordEngine.*     chord state, MIDI in/out, mixing, UI event queue and snapshot

@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace hf
+namespace sl
 {
 namespace
 {
@@ -29,7 +29,7 @@ constexpr uint32_t bits (std::initializer_list<int> ivs)
 
 struct Suffix { uint32_t mask; const char* text; };
 
-// Interval set -> chord suffix. Mirrors _SUFFIXES in handful_proto/theory.py.
+// Interval set -> chord suffix. Mirrors _SUFFIXES in lirio_proto/theory.py.
 const Suffix suffixes[] = {
     { bits ({ 0 }), "" },
     { bits ({ 0, 4, 7 }), "" }, { bits ({ 0, 3, 7 }), "m" }, { bits ({ 0, 3, 6 }), "dim" }, { bits ({ 0, 5, 7 }), "sus4" },

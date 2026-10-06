@@ -1,4 +1,4 @@
-"""The Handful engine: chord state, sound generation and the audio-thread clock.
+"""The Simpático Lírio engine: chord state, sound generation and the audio-thread clock.
 
 Every state change goes through `post()`, so it runs on the audio thread at the
 start of a block. MIDI and GUI threads never touch the synth directly.

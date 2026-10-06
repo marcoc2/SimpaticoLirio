@@ -5,7 +5,7 @@ namespace
 {
 const juce::StringArray noteNames { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" };
 
-juce::StringArray presetNames (const std::vector<hf::Preset>& presets)
+juce::StringArray presetNames (const std::vector<sl::Preset>& presets)
 {
     juce::StringArray names;
     for (const auto& p : presets) names.add (p.name);
@@ -13,10 +13,10 @@ juce::StringArray presetNames (const std::vector<hf::Preset>& presets)
 }
 }
 
-juce::StringArray HandfulProcessor::choicesFor (const juce::String& id)
+juce::StringArray LirioProcessor::choicesFor (const juce::String& id)
 {
-    if (id == "sound")       return presetNames (hf::getPresets());
-    if (id == "bassSound")   return presetNames (hf::getBassPresets());
+    if (id == "sound")       return presetNames (sl::getPresets());
+    if (id == "bassSound")   return presetNames (sl::getBassPresets());
     if (id == "perform")     return { "Block", "Strum", "Strum 2 Oct", "Slop", "Arp", "Arp 2 Oct", "Pattern", "Harp" };
     if (id == "style")       return { "Simple", "Advanced", "Free" };
     if (id == "voicingMode") return { "Octave", "Split" };
@@ -25,13 +25,13 @@ juce::StringArray HandfulProcessor::choicesFor (const juce::String& id)
     if (id == "arpRate")
     {
         juce::StringArray s;
-        for (int i = 0; i < hf::Performer::numArpRates; ++i) s.add (hf::Performer::arpRateName (i));
+        for (int i = 0; i < sl::Performer::numArpRates; ++i) s.add (sl::Performer::arpRateName (i));
         return s;
     }
     if (id == "pattern")
     {
         juce::StringArray s;
-        for (int i = 0; i < hf::Performer::numPatterns; ++i) s.add (hf::Performer::patternName (i));
+        for (int i = 0; i < sl::Performer::numPatterns; ++i) s.add (sl::Performer::patternName (i));
         return s;
     }
     if (id == "key")
@@ -44,7 +44,7 @@ juce::StringArray HandfulProcessor::choicesFor (const juce::String& id)
     return {};
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout HandfulProcessor::createLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout LirioProcessor::createLayout()
 {
     using namespace juce;
     AudioProcessorValueTreeState::ParameterLayout layout;
@@ -94,23 +94,23 @@ juce::AudioProcessorValueTreeState::ParameterLayout HandfulProcessor::createLayo
 }
 
 //==============================================================================
-HandfulProcessor::HandfulProcessor()
+LirioProcessor::LirioProcessor()
     : AudioProcessor (BusesProperties().withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-      state (*this, nullptr, "HandfulState", createLayout())
+      state (*this, nullptr, "SimpaticoLirioState", createLayout())
 {
-   #define HANDFUL_INIT(name) raw.name = state.getRawParameterValue (#name); jassert (raw.name != nullptr);
-    HANDFUL_PARAMS (HANDFUL_INIT)
-   #undef HANDFUL_INIT
+   #define LIRIO_INIT(name) raw.name = state.getRawParameterValue (#name); jassert (raw.name != nullptr);
+    LIRIO_PARAMS (LIRIO_INIT)
+   #undef LIRIO_INIT
 
     for (auto& k : pendingKnobs) k.store (-1);
     startTimerHz (60);
 }
 
-void HandfulProcessor::timerCallback()
+void LirioProcessor::timerCallback()
 {
     // Knob bank A (red): voicing, bass voicing, sound, perform.
     // Knob bank B (green): tone, rate (pattern while in Pattern mode), delay, space.
-    const bool patternMode = (int) raw.perform->load() == (int) hf::PerformMode::Pattern;
+    const bool patternMode = (int) raw.perform->load() == (int) sl::PerformMode::Pattern;
     const char* targets[numKnobs] = { "voicing", "bassVoicing", "sound", "perform",
                                       "tone", patternMode ? "pattern" : "arpRate", "delay", "space" };
     for (int i = 0; i < numKnobs; ++i)
@@ -127,17 +127,17 @@ void HandfulProcessor::timerCallback()
     }
 }
 
-hf::EngineSettings HandfulProcessor::readSettings() const
+sl::EngineSettings LirioProcessor::readSettings() const
 {
-    hf::EngineSettings s;
+    sl::EngineSettings s;
     s.sound = (int) raw.sound->load();
     s.bassSound = (int) raw.bassSound->load();
-    s.perform = (hf::PerformMode) (int) raw.perform->load();
+    s.perform = (sl::PerformMode) (int) raw.perform->load();
     s.arpRate = (int) raw.arpRate->load();
     s.pattern = (int) raw.pattern->load();
     s.keyIndex = (int) raw.key->load();
     s.keyMode = raw.keyMode->load() > 0.5f;
-    s.style = (hf::Playstyle) (int) raw.style->load();
+    s.style = (sl::Playstyle) (int) raw.style->load();
     s.voicing = (int) raw.voicing->load();
     s.splitVoicing = (int) raw.voicingMode->load() == 1;
     s.bassVoicing = (int) raw.bassVoicing->load();
@@ -155,22 +155,22 @@ hf::EngineSettings HandfulProcessor::readSettings() const
     return s;
 }
 
-void HandfulProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void LirioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     engine.prepare (sampleRate, samplesPerBlock);
 }
 
-bool HandfulProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool LirioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     const auto& out = layouts.getMainOutputChannelSet();
     return out == juce::AudioChannelSet::stereo() || out == juce::AudioChannelSet::mono();
 }
 
-void HandfulProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
+void LirioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
 {
     juce::ScopedNoDenormals noDenormals;
 
-    hf::TransportInfo transport;
+    sl::TransportInfo transport;
     if (auto* head = getPlayHead())
     {
         if (const auto pos = head->getPosition())
@@ -200,18 +200,18 @@ void HandfulProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
 }
 
 //==============================================================================
-juce::AudioProcessorEditor* HandfulProcessor::createEditor()
+juce::AudioProcessorEditor* LirioProcessor::createEditor()
 {
-    return new HandfulEditor (*this);
+    return new LirioEditor (*this);
 }
 
-void HandfulProcessor::getStateInformation (juce::MemoryBlock& destData)
+void LirioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     if (auto xml = state.copyState().createXml())
         copyXmlToBinary (*xml, destData);
 }
 
-void HandfulProcessor::setStateInformation (const void* data, int sizeInBytes)
+void LirioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (state.state.getType()))
@@ -220,5 +220,5 @@ void HandfulProcessor::setStateInformation (const void* data, int sizeInBytes)
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new HandfulProcessor();
+    return new LirioProcessor();
 }
