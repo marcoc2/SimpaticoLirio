@@ -5,6 +5,9 @@ project(SimpaticoLirio VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Static MSVC runtime, so the released plugin does not need the VC++ Redistributable.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # WebView2 SDK (NuGet package), downloaded into external/nuget on first configure.
 set(WEBVIEW2_VERSION 1.0.3485.44)
 set(WEBVIEW2_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/nuget/Microsoft.Web.WebView2.${WEBVIEW2_VERSION}")
